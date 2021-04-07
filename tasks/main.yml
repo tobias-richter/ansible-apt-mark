@@ -27,7 +27,7 @@
 - name: "unhold packages."
   block:
     - name: "Gather the package facts."
-      ansible.builtin.package_facts:
+      package_facts:
         manager: auto
 
     - name: "Get info about hold packages."
