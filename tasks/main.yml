@@ -1,0 +1,50 @@
+---
+- name: "hold packages."
+  block:
+    - name: "Gather the package facts."
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: "Get info about hold packages."
+      command: apt-mark showhold
+      register: apt_mark_showhold_result
+      changed_when: false
+
+    - name: "Calculate packages to be marked"
+      set_fact:
+        _hold_packages: "{{ apt_mark_hold_packages | intersect(ansible_facts.packages.keys()) | difference(apt_mark_showhold_result.stdout_lines) | list }}"
+
+    - name: "apt-mark hold."
+      include_tasks: apt_mark.yml
+      vars:
+        hold_status: hold
+      with_items: "{{ _hold_packages }}"
+      loop_control:
+        loop_var: _apt_mark_package
+
+  when: apt_mark_hold_packages | length > 0
+
+- name: "unhold packages."
+  block:
+    - name: "Gather the package facts."
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: "Get info about hold packages."
+      command: apt-mark showhold
+      register: apt_mark_showhold_result
+      changed_when: false
+
+    - name: "Calculate packages to be marked with unhold."
+      set_fact:
+        _unhold_packages: "{{ apt_mark_unhold_packages | intersect(apt_mark_showhold_result.stdout_lines) | list }}"
+
+    - name: "apt-mark hold."
+      include_tasks: apt_mark.yml
+      vars:
+        hold_status: unhold
+      with_items: "{{ _unhold_packages }}"
+      loop_control:
+        loop_var: _apt_mark_package
+
+  when: apt_mark_unhold_packages | length > 0
