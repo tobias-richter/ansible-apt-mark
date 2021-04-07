@@ -1,3 +1,3 @@
 ---
-- name: "Mark package '{{ _apt_mark_package }}' as '{{ hold_status }}'."
+- name: "Mark package '{{ _apt_mark_package }}' as '{{ hold_status }}'."  # noqa 301
   command: "apt-mark {{ hold_status }} {{ _apt_mark_package }}"
